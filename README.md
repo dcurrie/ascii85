@@ -17,7 +17,7 @@ message framing, so cannot be ignored. Encoding/decoding is done from a complete
 a complete output buffer.
 
 There is a nice looking standard implementation at https://github.com/judsonx/base85 -- take a
-look at that one if you don't share my contraints. It supports a stateful stream processing 
+look at that one if you don't share my constraints. It supports a stateful stream processing 
 approach as opposed to my complete input buffer to complete output buffer approach.
 
 ## C API
@@ -51,7 +51,7 @@ int32_t decode_ascii85 (const uint8_t *inp, int32_t in_length, uint8_t *outp, in
 
 ## Building
 
-A Makefile is included that may work for you. But you really only need: ascii85.c ad ascii85.h
+A `Makefile` is included that may work for you. But you really only need: `ascii85.c` and `ascii85.h`
 
 The Makefile targets are: `test` and `lint`.
 
