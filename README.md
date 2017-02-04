@@ -64,16 +64,25 @@ Run the unit tests with: `./test`
 The `./test` program can be used to encode and decode data in a limited way.
 
 Encode example:
-  `$ ./test -i hello`
-  `<~BOu!rDZ~>`
+
+~~~~
+  $ ./test -i hello
+  <~BOu!rDZ~>
+~~~~
 
 Decode example:
-  `$ ./test -o 'BOu!rDZ'`
-  `~Decoded: 68656c6c6f`
+
+~~~~
+  $ ./test -o 'BOu!rDZ'
+  ~Decoded: 68656c6c6f
+~~~~
 
 Quick test example:
-  `$ ./test -i hello -o 'BOu!rDZ'`
-  `~Encode OK`
+
+~~~~
+  $ ./test -i hello -o 'BOu!rDZ'
+  ~Encode OK
+~~~~
 
 ### License
 
