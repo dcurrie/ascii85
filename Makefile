@@ -10,6 +10,8 @@ LINT = /usr/local/bin/flexe-lint/flint
 
 TARGET = test
 
+TEST_FLAGS = -fprofile-instr-generate -fcoverage-mapping
+
 CFLAGS = -std=c99 -Wall -Wextra -Wmissing-prototypes $(TEST_FLAGS)
 
 TEST_OBJS = \
@@ -42,7 +44,7 @@ TARGET_OBJS = \
 # 	@echo "#define SVN_VERSION \"`svnversion -n .`\"" > version.h
 
 $(TARGET): $(TEST_OBJS) $(TARGET_OBJS) Makefile
-	$(CC) $(TEST_OBJS) $(TARGET_OBJS) $(LDFLAGS) -o $(TARGET)
+	$(CC) $(TEST_OBJS) $(TARGET_OBJS) $(LDFLAGS) $(TEST_FLAGS) -o $(TARGET)
 
 .PHONY: lint
 lint:
