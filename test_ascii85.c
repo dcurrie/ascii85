@@ -72,25 +72,36 @@ static void tc_encode_decode (lcut_tc_t *tc, void *data)
 {
     tv_pair_t *tv = (tv_pair_t *)data;
 
-    uint8_t buf[1024];
+    int32_t in_len = (int32_t )strlen((const char *)tv->in);
+    int32_t max_out_len = ascii85_get_max_encoded_length(in_len);
+    LCUT_TRUE(tc, max_out_len > 0);
 
-    int32_t olen = encode_ascii85(tv->in, (int32_t )strlen((const char *)tv->in), buf, 1023u);
+    uint8_t obuf[max_out_len + 1];
 
-    LCUT_TRUE(tc, olen >= 0);
-    LCUT_TRUE(tc, olen < 1024);
-
-    buf[olen] = 0u;
-
-    LCUT_TRUE(tc, (0 == strcmp((char *)buf, (const char *)tv->out)));
-
-    olen = decode_ascii85(tv->out, (int32_t )strlen((const char *)tv->out), buf, 1023u);
+    int32_t olen = encode_ascii85(tv->in, in_len, obuf, max_out_len);
 
     LCUT_TRUE(tc, olen >= 0);
-    LCUT_TRUE(tc, olen < 1024);
+    LCUT_TRUE(tc, olen <= max_out_len);
 
-    buf[olen] = 0u;
+    obuf[olen] = 0u;
 
-    LCUT_TRUE(tc, (0 == strcmp((char *)buf, (const char *)tv->in)));
+    LCUT_TRUE(tc, (0 == strcmp((char *)obuf, (const char *)tv->out)));
+
+
+    int32_t out_len = (int32_t )strlen((const char *)tv->out);
+    int32_t max_in_len = ascii85_get_max_decoded_length(out_len);
+    LCUT_TRUE(tc, max_in_len > 0);
+
+    uint8_t ibuf[max_in_len + 1];
+
+    olen = decode_ascii85(tv->out, out_len, ibuf, max_in_len);
+
+    LCUT_TRUE(tc, olen >= 0);
+    LCUT_TRUE(tc, olen <= max_in_len);
+
+    ibuf[olen] = 0u;
+
+    LCUT_TRUE(tc, (0 == strcmp((char *)ibuf, (const char *)tv->in)));
 }
 
 typedef struct tv_epair_s
@@ -217,9 +228,9 @@ static uint32_t random_size (void)
 
 static void tc_a85_random (lcut_tc_t *tc, void *data)
 {
-    uint8_t ibuf[MAX_A85_SIZE + 1u];
+    uint8_t ibuf[MAX_A85_SIZE];
     uint8_t obuf[MAX_A85_SIZE + (MAX_A85_SIZE / 2u)];
-    uint8_t dbuf[MAX_A85_SIZE + 1u];
+    uint8_t dbuf[MAX_A85_SIZE * 6u];
 
     int count = 100000;
 
@@ -232,6 +243,8 @@ static void tc_a85_random (lcut_tc_t *tc, void *data)
     while (count--)
     {
         uint32_t isz = random_size();
+
+        LCUT_TRUE(tc, ascii85_get_max_encoded_length(isz) <= (int32_t )sizeof(obuf));
 
         for (uint32_t i = 0u; i < isz; )
         {
@@ -246,17 +259,21 @@ static void tc_a85_random (lcut_tc_t *tc, void *data)
             ibuf[i++] = rand & 0xffu;
         }
 
-        int32_t olen = encode_ascii85(ibuf, isz, obuf, MAX_A85_SIZE + (MAX_A85_SIZE / 2u));
+        int32_t olen = encode_ascii85(ibuf, isz, obuf, sizeof(obuf));
 
         LCUT_TRUE(tc, olen >= 0);
-        LCUT_TRUE(tc, (uint32_t )olen <= (((isz + 3) / 4) * 5));
+        LCUT_TRUE(tc, olen <= ascii85_get_max_encoded_length(isz));
 
-        olen = decode_ascii85(obuf, olen, dbuf, MAX_A85_SIZE + 1u);
+        int32_t max_decoded = ascii85_get_max_decoded_length(olen);
+        LCUT_TRUE(tc, max_decoded > 0);
+        LCUT_TRUE(tc, max_decoded <= (int32_t )sizeof(dbuf));
+
+        olen = decode_ascii85(obuf, olen, dbuf, sizeof(dbuf));
 
         if (olen < 0) printf("Err: %d isz: %d \n", olen, isz); else {}
 
         LCUT_TRUE(tc, olen >= 0);
-        LCUT_TRUE(tc, (uint32_t )olen <= MAX_A85_SIZE);
+        LCUT_TRUE(tc, olen <= max_decoded);
         LCUT_TRUE(tc, (uint32_t )olen == isz);
 
         LCUT_TRUE(tc, (0 == memcmp(dbuf, ibuf, olen)));
@@ -380,31 +397,39 @@ int main (int argc, char **argv)
     else if (NULL != istr)
     {
         size_t isz = strlen(istr);
-        uint8_t obuf[((isz + 3) / 4) * 5];
-        int32_t olen = encode_ascii85((uint8_t *)istr, isz, obuf, sizeof(obuf));
-
-        if (NULL != ostr)
+        int32_t olen = ascii85_get_max_encoded_length(isz);
+        if (olen < 0)
         {
-            size_t osz = strlen(ostr);
-
-            if ((size_t )olen != osz)
-            {
-                printf("~Encode size mismatch, expected %zu got %d\n", osz, olen);
-            }
-            else if (0 != memcmp(obuf, ostr, olen))
-            {
-                printf("~Encode mismatch\n");
-            }
-            else
-            {
-                printf("~Encode OK\n");
-            }
+            printf("~Encode size error %d\n", olen);
         }
         else
         {
-            printf("<~");
-            for (i = 0; i < olen; i++) printf("%c", (char )obuf[i]);
-            printf("~>\n");
+            uint8_t obuf[olen];
+            olen = encode_ascii85((uint8_t *)istr, isz, obuf, olen);
+
+            if (NULL != ostr)
+            {
+                size_t osz = strlen(ostr);
+
+                if ((size_t )olen != osz)
+                {
+                    printf("~Encode size mismatch, expected %zu got %d\n", osz, olen);
+                }
+                else if (0 != memcmp(obuf, ostr, olen))
+                {
+                    printf("~Encode mismatch\n");
+                }
+                else
+                {
+                    printf("~Encode OK\n");
+                }
+            }
+            else
+            {
+                printf("<~");
+                for (i = 0; i < olen; i++) printf("%c", (char )obuf[i]);
+                printf("~>\n");
+            }
         }
     }
     else if (NULL != ostr)
@@ -412,18 +437,26 @@ int main (int argc, char **argv)
         // Not very useful perhaps since ostr is binary so hard to type at console
 
         size_t osz = strlen(ostr);
-        uint8_t dbuf[((osz + 4) / 5) * 4];
-        int32_t ilen = decode_ascii85((uint8_t *)ostr, osz, dbuf, sizeof(dbuf));
-
-        if (ilen < 0)
+        int32_t olen = ascii85_get_max_decoded_length(osz);
+        if (olen < 0)
         {
-            printf("~Decode error %d\n", ilen);
+            printf("~Decode size error %d\n", olen);
         }
         else
         {
-            printf("~Decoded: ");
-            for (i = 0; i < ilen; i++) printf("%02x", dbuf[i]);
-            printf("\n");
+            uint8_t dbuf[olen];
+            int32_t ilen = decode_ascii85((uint8_t *)ostr, osz, dbuf, olen);
+
+            if (ilen < 0)
+            {
+                printf("~Decode error %d\n", ilen);
+            }
+            else
+            {
+                printf("~Decoded: ");
+                for (i = 0; i < ilen; i++) printf("%02x", dbuf[i]);
+                printf("\n");
+            }
         }
     }
     else
