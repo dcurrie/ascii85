@@ -31,6 +31,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 // Some tests adapted from https://github.com/judsonx/base85 -- thanks Judson Weissert!
 
@@ -331,7 +332,8 @@ static int do_unit_test (void)
 
 static void usage (void)
 {
-    printf("usage: test [-u] [-i <string>] [-o <string>]");
+    printf("usage: test [-u] [-i <string>] [-o <string>]\n");
+    exit(EXIT_FAILURE);
 }
 
 // Examples:
