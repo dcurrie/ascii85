@@ -32,6 +32,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <inttypes.h>
+#include <time.h>
 
 // Some tests adapted from https://github.com/judsonx/base85 -- thanks Judson Weissert!
 
@@ -216,6 +218,8 @@ static uint32_t random_size (void)
     return (size);
 }
 
+static uint64_t rand_seed;
+
 static void tc_a85_random (lcut_tc_t *tc, void *data)
 {
     uint8_t ibuf[MAX_A85_SIZE + 1u];
@@ -228,7 +232,14 @@ static void tc_a85_random (lcut_tc_t *tc, void *data)
 
     (void )data;
 
-    xorshift128plus_seed(123456789u);
+    if (rand_seed == 0)
+    {
+        // Spread out the changing bits since only a few are likely to change between runs
+        rand_seed = murmurhash3_avalanche(time(NULL));
+        rand_seed ^= murmurhash3_avalanche((uint64_t )&rand_seed);
+    }
+
+    xorshift128plus_seed(rand_seed);
 
     while (count--)
     {
@@ -254,7 +265,7 @@ static void tc_a85_random (lcut_tc_t *tc, void *data)
 
         olen = decode_ascii85(obuf, olen, dbuf, MAX_A85_SIZE + 1u);
 
-        if (olen < 0) printf("Err: %d isz: %d \n", olen, isz); else {}
+        if (olen < 0) printf("Err: %d isz: %d seed: %" PRIu64 "\n", olen, isz, rand_seed); else {}
 
         LCUT_TRUE(tc, olen >= 0);
         LCUT_TRUE(tc, (uint32_t )olen <= MAX_A85_SIZE);
@@ -332,7 +343,7 @@ static int do_unit_test (void)
 
 static void usage (void)
 {
-    printf("usage: test [-u] [-i <string>] [-o <string>]\n");
+    printf("usage: test [-u] [-i <string>] [-o <string>] [-s <seed>]\n");
     exit(EXIT_FAILURE);
 }
 
@@ -365,6 +376,12 @@ int main (int argc, char **argv)
             unit_test = false;
             i += 1;
             if (i < argc) ostr = argv[i];
+            else usage();
+        }
+        else if (strcmp(argv[i], "-s") == 0)
+        {
+            i += 1;
+            if (i < argc) rand_seed = atoll(argv[i]);
             else usage();
         }
         else
