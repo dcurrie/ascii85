@@ -28,7 +28,8 @@ approach as opposed to my complete input buffer to complete output buffer approa
  * @param[in] inp pointer to a buffer of unsigned bytes 
  * @param[in] in_length the number of bytes at inp to encode
  * @param[in] outp pointer to a buffer for the encoded data
- * @param[in] out_max_length available space at outp in bytes; must be >= 5 * ceiling(in_length/4)
+ * @param[in] out_max_length available space at outp in bytes; must be >=
+ * ascii85_get_max_encoded_length(in_length)
  * @return number of bytes in the encoded value at outp if non-negative; error code from
  * ascii85_errs_e if negative
  * @par Possible errors include: ascii85_err_in_buf_too_large, ascii85_err_out_buf_too_small
@@ -40,13 +41,32 @@ int32_t encode_ascii85 (const uint8_t *inp, int32_t in_length, uint8_t *outp, in
  * @param[in] inp pointer to a buffer of Ascii85 encoded unsigned bytes 
  * @param[in] in_length the number of bytes at inp to decode
  * @param[in] outp pointer to a buffer for the decoded data
- * @param[in] out_max_length available space at outp in bytes; must be >= 4 * ceiling(in_length/5)
+ * @param[in] out_max_length available space at outp in bytes; must be >=
+ * ascii85_get_max_decoded_length(in_length)
  * @return number of bytes in the decoded value at outp if non-negative; error code from
  * ascii85_errs_e if negative
  * @par Possible errors include: ascii85_err_in_buf_too_large, ascii85_err_out_buf_too_small, 
  * ascii85_err_bad_decode_char, ascii85_err_decode_overflow
  */
 int32_t decode_ascii85 (const uint8_t *inp, int32_t in_length, uint8_t *outp, int32_t out_max_length);
+
+/*!
+ * @brief ascii85_get_max_encoded_length: get the maximum length a block of data will encode to
+ * @param[in] in_length the number of data bytes to encode
+ * @return maximum number of bytes the encoded buffer could be if non-negative; error code from
+ * ascii85_errs_e if negative
+ * @par Possible errors include: ascii85_err_in_buf_too_large
+ */
+int32_t ascii85_get_max_encoded_length (int32_t in_length);
+
+/*!
+ * @brief ascii85_get_max_encoded_length: get the maximum length a block of data will decode to
+ * @param[in] in_length the number of encoded bytes to decode
+ * @return maximum number of bytes the decoded buffer could be if non-negative; error code from
+ * ascii85_errs_e if negative
+ * @par Possible errors include: ascii85_err_in_buf_too_large
+ */
+int32_t ascii85_get_max_decoded_length (int32_t in_length);
 ~~~~
 
 ## Building

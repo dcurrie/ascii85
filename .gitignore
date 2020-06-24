@@ -31,3 +31,25 @@
 # Debug files
 *.dSYM/
 *.su
+
+# Dependency tracking
+*.d
+
+# macOS
+.DS_Store
+
+# SonarScan
+.scannerwork
+sonar_dribble.txt
+build-wrapper-macosx-x86
+bw-output
+*.profraw
+*.profdata
+
+# Lint
+lint
+
+# Unit tests
+test
+lcut/lcut_user_guide.pdf
+base85_test.c
