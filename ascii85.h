@@ -43,6 +43,10 @@ int32_t encode_ascii85 (const uint8_t *inp, int32_t in_length, uint8_t *outp, in
 
 int32_t decode_ascii85 (const uint8_t *inp, int32_t in_length, uint8_t *outp, int32_t out_max_length);
 
+int32_t ascii85_get_max_encoded_length (uint32_t in_length);
+
+int32_t ascii85_get_max_decoded_length (uint32_t in_length);
+
 
 #ifdef __cplusplus
 }
