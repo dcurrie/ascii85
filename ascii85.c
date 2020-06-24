@@ -4,21 +4,21 @@
  *
  * @par
  * @copyright Copyright © 2017 Doug Currie, Londonderry, NH, USA. All rights reserved.
- * 
+ *
  * @par
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software 
- * and associated documentation files (the "Software"), to deal in the Software without 
- * restriction, including without limitation the rights to use, copy, modify, merge, publish, 
- * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in all copies or 
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
  * substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING 
- * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND 
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, 
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 **/
 
@@ -75,7 +75,7 @@ static inline bool ascii85_char_ng (uint8_t c)
 
 /*!
  * @brief encode_ascii85: encode binary input into Ascii85
- * @param[in] inp pointer to a buffer of unsigned bytes 
+ * @param[in] inp pointer to a buffer of unsigned bytes
  * @param[in] in_length the number of bytes at inp to encode
  * @param[in] outp pointer to a buffer for the encoded data
  * @param[in] out_max_length available space at outp in bytes; must be >=
@@ -156,14 +156,14 @@ int32_t encode_ascii85 (const uint8_t *inp, int32_t in_length, uint8_t *outp, in
 
 /*!
  * @brief decode_ascii85: decode Ascii85 input to binary output
- * @param[in] inp pointer to a buffer of Ascii85 encoded unsigned bytes 
+ * @param[in] inp pointer to a buffer of Ascii85 encoded unsigned bytes
  * @param[in] in_length the number of bytes at inp to decode
  * @param[in] outp pointer to a buffer for the decoded data
  * @param[in] out_max_length available space at outp in bytes; must be >=
  * ascii85_get_max_decoded_length(in_length)
  * @return number of bytes in the decoded value at outp if non-negative; error code from
  * ascii85_errs_e if negative
- * @par Possible errors include: ascii85_err_in_buf_too_large, ascii85_err_out_buf_too_small, 
+ * @par Possible errors include: ascii85_err_in_buf_too_large, ascii85_err_out_buf_too_small,
  * ascii85_err_bad_decode_char, ascii85_err_decode_overflow
  */
 int32_t decode_ascii85 (const uint8_t *inp, int32_t in_length, uint8_t *outp, int32_t out_max_length)
@@ -304,11 +304,11 @@ int32_t decode_ascii85 (const uint8_t *inp, int32_t in_length, uint8_t *outp, in
  * ascii85_errs_e if negative
  * @par Possible errors include: ascii85_err_in_buf_too_large
  */
-int32_t ascii85_get_max_encoded_length (uint32_t in_length)
+int32_t ascii85_get_max_encoded_length (int32_t in_length)
 {
     int32_t out_length;
 
-    if (in_length > ascii85_in_length_max)
+    if ((in_length < 0) || (in_length > ascii85_in_length_max))
     {
         out_length = (int32_t )ascii85_err_in_buf_too_large;
     }
@@ -329,11 +329,11 @@ int32_t ascii85_get_max_encoded_length (uint32_t in_length)
  * ascii85_errs_e if negative
  * @par Possible errors include: ascii85_err_in_buf_too_large
  */
-int32_t ascii85_get_max_decoded_length (uint32_t in_length)
+int32_t ascii85_get_max_decoded_length (int32_t in_length)
 {
     int32_t out_length;
 
-    if (in_length > ascii85_in_length_max)
+    if ((in_length < 0) || (in_length > ascii85_in_length_max))
     {
         out_length = (int32_t )ascii85_err_in_buf_too_large;
     }
